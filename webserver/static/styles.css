@@ -1,0 +1,140 @@
+body {
+    color: white;
+    background: rgb(36,39,53);
+    font-family: arial, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+}
+
+div {
+    display: block;
+}
+
+#left-div {
+    width: 15%;
+    float: left;
+    border-style: solid;
+    border-width: 1px;
+    border-color: white;
+    padding: 8px;
+}
+
+#center-div {
+    width: 84%;
+    float: right;
+    border-style: solid;
+    border-width: 1px;
+    border-color: white;
+}
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+tr:hover {
+    background: rgb(64, 65, 77);
+}
+
+.AxieLink {
+    color: white
+}
+
+.Aquatic {
+    color: rgb(0, 184, 206)
+}
+
+.Beast {
+    color: rgb(255, 184, 18)
+}
+
+.Bird {
+    color: rgb(255, 139, 189)
+}
+
+.Bug {
+    color: rgb(255, 83, 65)
+}
+
+.Plant {
+    color: rgb(108, 192, 0)
+}
+
+.Reptile {
+    color: rgb(200, 138, 224)
+}
+
+.Mech {
+    color: rgb(198 189 212);
+}
+
+.Dawn {
+    color: rgb(190 206 255);
+}
+
+.Dusk {
+    color: rgb(18 144 146);
+}
+
+.number_input {
+    width: 20%;
+    text-align: center;
+}
+
+.td-number {
+    text-align: right;
+}
+
+.searchCriteria {
+    margin: 8px;
+    padding: 8px;
+    background-color: rgb(40,43,57);
+    float: center;
+    font-weight: 500;
+    font-size: 18px;
+}
+
+.TextInput {
+    border-width: 1px;
+    border-style: solid;
+    border-color: gray;
+    color: white;
+    background-color: rgb(17,19,27);
+    height: 24px;
+    font-size: 16px;
+}
+
+.wide-text-input {
+    width: calc(100% - 8px + 2px); /* padding and border */
+}
+
+.ready {
+    color: greenyellow;
+}
+
+.not_ready {
+    color: lightcoral;
+}
+
+.button {
+    font: bold 11px Arial;
+    text-decoration: none;
+    background-color: #EEEEEE;
+    color: #333333;
+    padding: 2px 6px 2px 6px;
+    border-top: 1px solid #CCCCCC;
+    border-right: 1px solid #333333;
+    border-bottom: 1px solid #333333;
+    border-left: 1px solid #CCCCCC;
+}
+
+.screen-height {
+    height:100vh;
+}

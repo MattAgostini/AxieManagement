@@ -1,0 +1,25 @@
+
+# User input files
+accounts.xlsx
+secrets.xlsx
+
+# Compiled Python bytecode
+*.py[cod]
+*.egg-info/
+build/
+dist*/
+
+# Database files
+*.sqlite
+iv.dat
+seeds.py
+
+# Environment variables
+*.env
+
+# Log files
+log/
+
+# Discord files
+qr/
+images/

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='spinner.css') }}">
+    <meta charset="UTF-8">
+    <title>Axie Scholar</title>
+</head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<style>
+    .row {
+        display: flex;                  /* set up flexbox */
+        flex-direction: row;            /* left-to-right flow */
+        flex-wrap: nowrap;              /* prevent wrapping */
+        justify-content: space-between; /* put all remaining space between the boxes, with no space on either end */
+        align-items: stretch;           /* vertically stretch the boxes to fill the entire height of the row */
+        height: 95%;
+    }
+
+    .flex-row {
+        display: flex;                  /* set up flexbox */
+        flex-direction: row;            /* left-to-right flow */
+        flex-wrap: nowrap;              /* prevent wrapping */
+        justify-content: space-between; /* put all remaining space between the boxes, with no space on either end */
+        align-items: stretch;      
+    }
+    
+    .box-main { flex: 1 1 80%; }
+    .box-side { flex: 1 1 15%; }
+    
+    #left-div {
+        border-style: solid;
+        border-width: 1px;
+        border-color: white;
+        padding: 8px;
+        background-color: rgb(17,19,27);
+        height: 100%;
+    }
+    
+    #center-div {
+        border-style: solid;
+        border-width: 1px;
+        border-color: white;
+        height:calc(100% + 16px); /* subtract padding */
+    }
+</style>
+<script>
+    async function submitAction(protocol) {
+        if (protocol == "Refresh Token")
+            await executeAction("refresh")
+        else if (protocol == "Refresh MMR")
+            await executeAction("refresh_mmr")
+        else if (protocol == "Claim Selected")
+            await executeAction("claim")
+        else if (protocol == "Payout Selected")
+            await executeAction("payout")
+        else return;
+    }
+
+    async function executeAction(action) {
+
+        var scholarList = new Array();
+        var scholarsChecked = document.getElementsByName('scholar_checked');  
+        for (var checkbox of scholarsChecked) {  
+            if (checkbox.checked) {
+                scholarList.push(checkbox.value)
+                checkbox.checked = false;
+            }
+        }
+    
+        if (Object.keys(scholarList).length == 0) {
+            alert(`No scholars selected!`);
+            return;
+        }
+
+        var is_axs_mode = document.getElementById('axs_mode_enabled').checked;
+    
+        // Spinner loader
+        var anchor = document.getElementById("center-div");
+        var spinner = document.createElement("div");
+        spinner.id = 'cover-spin'
+        anchor.appendChild(spinner)
+    
+        var result = await fetch("{{ url_for('axie_scholar') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: action,
+                scholar_list: scholarList,
+                axs_mode: is_axs_mode
+            })
+        })
+        .then(response => {
+            console.log(response)
+            location.reload();
+        });
+    }
+</script>
+<body>
+<div class="screen-height">
+
+<!--  Navigation  -->
+{% include 'includes/navbar.html' %}
+
+<div class='row'>
+
+<!--  Left block  -->
+<div class='box-side' id="left-div">
+    <div style="height: 2%; font-size: 20px;">
+        Vaults
+    </div>
+    <div style="height: 96%; overflow-y: scroll; background: rgb(40,43,57); border-style: solid; border-width: 1px; border-color: white;">
+        <table>
+            <thead style="text-align: center;">
+                <tr>
+                    <th>
+                        Vault
+                    </th>
+                    <th>
+                        Address
+                    </th>
+                    <th>
+                        Accounts
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for vault_info in vault_infos %}
+                <tr>
+                    <td>
+                        {{ vault_info['vault_account'] }}
+                    </td>
+                    {% if vault_info['vault_account'] %}
+                    <td>
+                        {{ vault_info['vault_account'].public_addr[:15] }}
+                    </td>
+                    {% else %}
+                    <td>
+                        None
+                    </td>
+                    {% endif %}
+                    <td class="td-number">
+                        {{ vault_info['num_accounts'] }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div style="height: 2%; font-size: 20px; padding: 2px;">
+        <form onsubmit="setVault(this.submitted); return false;">
+        Seed <input class="number_input TextInput" type="text" id="set_vault_seed" value="">
+        Account <input class="number_input TextInput" type="text" id="set_vault_seed_account" value="">
+        <input type="submit" name="set_vault" value="Set Vault">
+        </form>
+    </div>
+</div>
+
+<!--  Center block  -->
+<div class='box-main' id="center-div">
+    <div style="height: 75%;">
+    <div class="flex-row" style="height: 3%;">
+        <div>
+            <form onsubmit="submitAction(this.submitted); return false;" style="height: 75%;">
+            <input type="submit" onclick="this.form.submitted=this.value;" value="Refresh Token">
+            <input type="submit" onclick="this.form.submitted=this.value;" value="Refresh MMR">
+            <input type="submit" onclick="this.form.submitted=this.value;" value="Claim Selected">
+            <input type="submit" onclick="this.form.submitted=this.value;" value="Payout Selected">
+            </form>
+        </div>
+        <div style="width: 50%;">
+            Filter Seeds <input class="number_input TextInput" type="text" id="seed_select" value="" onkeyup="filterSeeds()">
+            AXS Mode <input type="checkbox" class="axs_mode" id="axs_mode_enabled">
+        </div>
+    </div>
+    <div style="height: 97%; overflow-y: scroll; border: 1px; border-color: white; border-style: solid;">
+        <table id="scholar-table">
+            <thead style="text-align: center;">
+                <tr>
+                    <th>
+                        Payout Percentage
+                    </th>
+                    <th style="display: none">
+                        Seed
+                    </th>
+                    <th style="display: none">
+                        Account Num
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        MMR
+                    </th>
+                    <th>
+                        Claimable
+                    </th>
+                    <th>
+                        To Payout
+                    </th>
+                    <th>
+                        Last Claim
+                    </th>
+                    <th>
+                        Select
+                    </th>
+                    <th>
+                        Status
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scholar in scholarInfos %}
+                <tr>
+                    <td>
+                        {{ scholar.account.payout_percentage }}%
+                    </td>
+                    <td id="seed_id" style="display: none">
+                        {{ scholar.seed_id }}
+                    </td>
+                    <td style="display: none">
+                        {{ scholar.seed_account_num }}
+                    </td>
+                    <td>
+                        {{ scholar.account }}
+                    </td>
+                    <td class="td-number">
+                        {{ scholar.mmr }}
+                    </td>
+                    <td class="td-number">
+                        {{ scholar.scholar_page_data.unclaimed_slp }}
+                    </td>
+                    <td class="td-number">
+                        {{ scholar.scholar_page_data.slp_to_payout }}
+                    </td>
+                    <td>
+                        {{ scholar.scholar_page_data.last_claimed_date }}
+                    </td>
+                    <td>
+                        <input type="checkbox" class="scholar_checked" name="scholar_checked" value="{{ scholar.account.public_addr }}">
+                    </td>
+                    <td class="{{ scholar.scholar_page_data.next_claim_status['style'] }}">
+                        {{ scholar.scholar_page_data.next_claim_status['display'] }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            </div>
+        </table>
+    </div>
+    </div>
+</div>
+
+</div>
+
+<script>
+    var scholars = {{ scholarInfos|tojson }}
+
+    var last_scholar_checked = null;
+    $('.scholar_checked').click(function(e){
+    
+        if(!last_scholar_checked) {
+            last_scholar_checked = this;
+            console.log(last_scholar_checked)
+            return;
+        }  
+    
+        if(e.shiftKey) {
+            var from = $('.scholar_checked').index(this);
+            var to = $('.scholar_checked').index(last_scholar_checked);
+    
+            var start = Math.min(from, to);
+            var end = Math.max(from, to) + 1;
+    
+            $('.scholar_checked').slice(start, end)
+                .filter(':not(:disabled)')
+                .prop('checked', last_scholar_checked.checked);
+        }
+        last_scholar_checked = this;
+    });
+
+    function filterSeeds() {
+        const trs = document.querySelectorAll('#scholar-table tr:not(.header)')
+        const filter = document.querySelector('#seed_select').value
+
+        for (i = 1; i < trs.length; i++) {
+            // Hide the row initially.
+            trs[i].style.display = "none";
+        
+            tds = trs[i].getElementsByTagName("td");
+            for (var j = 0; j < tds.length; j++) {
+                cell = trs[i].getElementsByTagName("td")[j];
+                if (cell.id == 'seed_id') {
+                    console.log(cell.id)
+                    console.log(cell.innerText.toUpperCase())
+                    if (cell.innerText.toUpperCase().indexOf(filter) > -1) {
+                        trs[i].style.display = "";
+                        break;
+                    } 
+                }
+            }
+        }
+    }
+
+    function findAccount(seed_id, seed_account_num) {
+        for (var account of scholars) {
+            if (seed_id == account['seed_id'] && seed_account_num == account['seed_account_num']) {
+                return account;
+            }
+        }
+    }
+
+    async function setVault() {
+        var seed_id = document.getElementById("set_vault_seed").value;
+        var seed_account_num = document.getElementById("set_vault_seed_account").value;
+
+        account = findAccount(seed_id, seed_account_num);
+        
+        if (account['account']['account_types'].includes('Scholar', 'Manager')) {
+            alert(`Unable to set account as Vault! Is it a manager/scholar?`);
+            return;
+        }
+
+        // Spinner loader
+        var anchor = document.getElementById("center-div");
+        var spinner = document.createElement("div");
+        spinner.id = 'cover-spin'
+        anchor.appendChild(spinner)
+
+        var result = await fetch("{{ url_for('axie_scholar') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: "set_vault",
+                seed_id: seed_id,
+                seed_account_num: seed_account_num
+            })
+        })
+        .then(response => {
+            console.log(response)
+            location.reload();
+        });
+    }
+</script>
+
+</div>
+</body>
+</html>
